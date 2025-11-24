@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GUI extends JFrame {
     private JLabel label;
@@ -66,13 +67,13 @@ public class GUI extends JFrame {
         add(destinationCaption);
         add(destinationEntry);
         add(backgroundMap);
-        //add(routeDrawing);
+        add(routeDrawing);
         add(panel);
         add(goButton);
         backgroundMap.setVisible(true);
 
         setVisible(true);
-        //routeDrawing.setVisible(false);
+        routeDrawing.setVisible(false);
 
         goButton.addActionListener(new ActionListener() {
             @Override
@@ -81,6 +82,20 @@ public class GUI extends JFrame {
                 String start = startEntry.getText();
                 String destination = destinationEntry.getText();
                 System.out.println(start+ "," + destination);
+
+                /*ArrayList<Integer> bestRoute = new ArrayList<>(Arrays.asList(799, 1503, 795, 792, 803, 786, 787, 788, 1754, 802));
+
+                generatedRoute = bestRoute;
+
+                backgroundMap.setVisible(false);
+
+                routeDrawing.setRoute(bestRoute);
+                //System.out.println("should be drawing the best route");
+                routeDrawing.setVisible(true);
+                routeDrawing.repaint();
+
+                backgroundMap.repaint();
+                backgroundMap.setVisible(true);*/
 
                 //search a file for this String, hope it finds a match, which I can then turn into an integer
 
@@ -126,6 +141,7 @@ public class GUI extends JFrame {
                     backgroundMap.setVisible(false);
 
                     routeDrawing.setRoute(bestRoute);
+                    System.out.println("should be drawing the best route");
                     routeDrawing.setVisible(true);
                     routeDrawing.repaint();
 

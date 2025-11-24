@@ -3,11 +3,11 @@ import java.util.*;
 public class MainLoopOfGA {
     private ArrayList<Integer> bestRoute;
     public MainLoopOfGA(int START_INDEX, int END_INDEX, ArrayList<Node> allNodes, int[][] adjMat){
-        GeneticAlgorithm ga = new GeneticAlgorithm(allNodes, adjMat);
+        OptimisedGeneticAlgorithm ga = new OptimisedGeneticAlgorithm(allNodes, adjMat);
 
-        int routesPerGeneration = 50;
-        int bestNofGeneration = 15;
-        int nOfGenerations = 20;
+        int routesPerGeneration = 200;
+        int bestNofGeneration = 30;
+        int nOfGenerations = 100;
 
         ArrayList<ArrayList<Integer>> allRoutesInThisGeneration = new ArrayList<ArrayList<Integer>>();
         ArrayList<ArrayList<Integer>> allRoutesInThisGenerationWithNoOneOffLoops = new ArrayList<ArrayList<Integer>>();
@@ -15,11 +15,11 @@ public class MainLoopOfGA {
         //initialises routes
         for (int i = 0; i < routesPerGeneration; i++) {
             //System.out.println("RANDOMISING A ROUTE...");
-            ArrayList<Integer> randomRoute = ga.createRandomRoute3(START_INDEX, END_INDEX);
+            ArrayList<Integer> randomRoute = ga.createRandomRoute4(START_INDEX, END_INDEX);
             //now perfect
-            ArrayList<Integer> routeWithNoLoops = ga.removeRedundantLoops(randomRoute);
+            ArrayList<Integer> routeWithNoLoops = ga.removeRedundantMoves(randomRoute);
 
-            System.out.println("Routes have been addedd");
+            //System.out.println("Routes have been addedd");
             allRoutesInThisGeneration.add(routeWithNoLoops);
         }
 

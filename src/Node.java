@@ -46,5 +46,9 @@ public class Node {
         return distance;
     }
 
+    public String getRoadName(){
+        return roadName;
+    }
+
 
 }

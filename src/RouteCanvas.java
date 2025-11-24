@@ -50,20 +50,30 @@ public class RouteCanvas extends JComponent {
 
         // Set line color and thickness
         g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(2)); // Line thickness = 2
+        g2d.setStroke(new BasicStroke(4)); // Line thickness = 2
 
-        g2d.setColor(Color.BLACK);
+        int startX = 0;
+        int startY = 0;
+
+        int endX=0;
+        int endY = 0;
+
 
         //draw the route assuming lines are connected
         for (int i = 0; i < generatedRoute.size()-1; i++){
-            int startY = (int) ((X_OFFSET + allNodes.get(i).getX()) *HORIZONTAL_SCALE_FACTOR);
-            int startX = (int) ((Y_OFFSET + allNodes.get(i).getY()) *VERTICAL_SCALE_FACTOR);
+            startY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(i)).getX()) *HORIZONTAL_SCALE_FACTOR);
+            startX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(i)).getY()) *VERTICAL_SCALE_FACTOR);
 
-            int endY = (int) ((X_OFFSET + allNodes.get(i+1).getX()) *HORIZONTAL_SCALE_FACTOR);
-            int endX = (int) ((Y_OFFSET + allNodes.get(i+1).getY()) *VERTICAL_SCALE_FACTOR);
+            endY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(i+1)).getX()) *HORIZONTAL_SCALE_FACTOR);
+            endX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(i+1)).getY()) *VERTICAL_SCALE_FACTOR);
 
-            g2d.drawLine(startX, startY, endX, endY);
+            System.out.print(allNodes.get(generatedRoute.get(i)).getRoadName()+ " to ");
+
+            g2d.drawLine(startX, 650-startY, endX, 650-endY);
         }
+
+        System.out.print(allNodes.get(generatedRoute.get(generatedRoute.size()-1)).getRoadName());
+        System.out.println("START COORD: "+startX+","+(650-startY)+" AND END COORD: "+endX+","+(650-endY));
 
         System.out.println("DRAWING ROUTE");
 

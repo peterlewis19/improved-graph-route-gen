@@ -4,23 +4,23 @@ import java.util.List;
 import java.util.Random;
 
 public class GeneticAlgorithm {
-    private final int[][] edgeRelationshipMatrix;
-    private final ArrayList<Node> unconnectedGraph;
+    private final int[][] adjMat;
+    private final ArrayList<Node> allNodes;
 
-    public GeneticAlgorithm(ArrayList<Node> unconnectedGraph, int[][] edgeRelationshipMatrix){
-        this.edgeRelationshipMatrix = edgeRelationshipMatrix;
-        this.unconnectedGraph = unconnectedGraph;
+    public GeneticAlgorithm(ArrayList<Node> allNodes, int[][] adjMat){
+        this.adjMat = adjMat;
+        this.allNodes = allNodes;
     }
 
     public double evaluateFitness(ArrayList<Integer> route){
         double totalDistance = 0;
 
         for (int i=0; i< route.size()-1; i++){
-            totalDistance = totalDistance + unconnectedGraph.get(route.get(i)).distanceTo(unconnectedGraph.get(route.get(i+1)));
+            totalDistance = totalDistance + allNodes.get(route.get(i)).distanceTo(allNodes.get(route.get(i+1)));
 
 
             //CANT FIX BUG OF LEAVING PATHS, so heavily penalise it
-            if (edgeRelationshipMatrix[route.get(i)][route.get(i+1)]!= 1){
+            if (adjMat[route.get(i)][route.get(i+1)]!= 1){
                 totalDistance = totalDistance + 10000000;
             }
         }
@@ -37,8 +37,8 @@ public class GeneticAlgorithm {
         //find closest nodes between routes apart from endpoints
         for (int i = 2; i < route1.size() ; i++) {
             for (int j = 2; j < route2.size() ; j++) {
-                Node node1 = unconnectedGraph.get(route1.get(i));
-                Node node2 = unconnectedGraph.get(route2.get(j));
+                Node node1 = allNodes.get(route1.get(i));
+                Node node2 = allNodes.get(route2.get(j));
                 double testDistance = node1.distanceTo(node2);
 
                 if (testDistance < shortestDistance && testDistance > 0) {
@@ -57,7 +57,7 @@ public class GeneticAlgorithm {
         int nodeA = route1.get(currentClosestRoute1);
         int nodeB = route2.get(currentClosestRoute2);
 
-        List<Integer> path = createRandomRoute3(nodeA, nodeB);
+        List<Integer> path = createRandomRoute4(nodeA, nodeB);
 
         // Combine segments
         finalRoute.addAll(finalRoutePart1);
@@ -70,20 +70,20 @@ public class GeneticAlgorithm {
     public ArrayList<Integer> mutate2(ArrayList<Integer> route){
         ArrayList<Integer> finalRoute = new ArrayList<Integer>();
 
-        //turn an index of route into an index of unconnectedGraph
+        //turn an index of route into an index of allNodes
 
         Random rand = new Random();
         //pick 2 indexes, draw a path between them
         int a = rand.nextInt(0,route.size());
         int b = rand.nextInt(0,route.size());
 
-        //find value of route[index], look for that value in unconnectedGraph, get that index#
+        //find value of route[index], look for that value in allNodes, get that index#
         int valueOfRouteGetA = route.get(a); //this is index of value in unconnected graph
         int valueOfRouteGetB = route.get(b);
 
         finalRoute.addAll(ArrayListHelp.sliceArrayList(0, a,route));
 
-        ArrayList<Integer> mutatedInbetweenRoute = createRandomRoute3(valueOfRouteGetA,valueOfRouteGetB);
+        ArrayList<Integer> mutatedInbetweenRoute = createRandomRoute4(valueOfRouteGetA,valueOfRouteGetB);
         finalRoute.addAll(mutatedInbetweenRoute);
         finalRoute.addAll(ArrayListHelp.sliceArrayList(b+1,route.size(), route));
 
@@ -192,7 +192,7 @@ public class GeneticAlgorithm {
     }
 
     //randomly walks until it reaches the destination, not visiting any node twice unless it has to
-    public ArrayList<Integer> createRandomRoute3(int nodeA, int nodeB) {
+    /*public ArrayList<Integer> createRandomRoute3(int nodeA, int nodeB) {
         ArrayList<Integer> routeWalked = new ArrayList<>();
         HashSet<Integer> visitedNodes = new HashSet<>();
         Random rand = new Random();
@@ -201,23 +201,23 @@ public class GeneticAlgorithm {
         routeWalked.add(currentNode);
         visitedNodes.add(currentNode);
 
-        int maxSteps = edgeRelationshipMatrix.length * edgeRelationshipMatrix.length; // safety cutoff
+        int maxSteps = adjMat.length * adjMat.length; // safety cutoff
         int steps = 0;
 
         while (currentNode != nodeB && steps < maxSteps) {
             ArrayList<Integer> neighbours = new ArrayList<>();
 
             // collect unvisited neighbors
-            for (int j = 0; j < edgeRelationshipMatrix.length; j++) {
-                if (edgeRelationshipMatrix[currentNode][j] == 1 && !visitedNodes.contains(j)) {
+            for (int j = 0; j < adjMat.length; j++) {
+                if (adjMat[currentNode][j] == 1 && !visitedNodes.contains(j)) {
                     neighbours.add(j);
                 }
             }
 
             // if no unvisited neighbors allow revisiting
             if (neighbours.isEmpty()) {
-                for (int j = 0; j < edgeRelationshipMatrix.length; j++) {
-                    if (edgeRelationshipMatrix[currentNode][j] == 1 && j != currentNode) {
+                for (int j = 0; j < adjMat.length; j++) {
+                    if (adjMat[currentNode][j] == 1 && j != currentNode) {
                         neighbours.add(j);
                     }
                 }
@@ -238,7 +238,64 @@ public class GeneticAlgorithm {
         }
 
         return routeWalked;
+    }*/
+
+    public ArrayList<Integer> createRandomRoute4(int nodeA, int nodeB) {
+        ArrayList<Integer> route = new ArrayList<>();
+        HashSet<Integer> visited = new HashSet<>();
+        Random rand = new Random();
+
+        int current = nodeA;
+        route.add(current);
+        visited.add(current);
+
+        // safety cap (much lower than n*n)
+        int maxSteps = adjMat.length * 4;
+
+        int steps = 0;
+        while (current != nodeB && steps < maxSteps) {
+
+            // --- Collect neighbors ---
+            ArrayList<Integer> neighbours = new ArrayList<>(8);
+            int n = adjMat.length;
+
+            for (int j = 0; j < n; j++) {
+                if (adjMat[current][j] == 1 && j != current) {
+                    neighbours.add(j);
+                }
+            }
+
+            if (neighbours.isEmpty()) break;
+
+            // --- A*-inspired scoring ---
+            double bestScore = Double.POSITIVE_INFINITY;
+            int bestNext = neighbours.get(0);
+
+            for (int neigh : neighbours) {
+
+                double h = allNodes.get(neigh).distanceTo(allNodes.get(nodeB)); // heuristic
+                double revisitPenalty = visited.contains(neigh) ? 10000 : 0;
+                double randomness = rand.nextDouble() * 10.0;  // exploration
+
+                double score = h + revisitPenalty + randomness;
+
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestNext = neigh;
+                }
+            }
+
+            // --- Move to selected node ---
+            current = bestNext;
+            route.add(current);
+            visited.add(current);
+
+            steps++;
+        }
+
+        return route;
     }
+
 
 
 

@@ -100,11 +100,11 @@ public class Canvas extends JComponent {
                     int endY = (int) ((X_OFFSET + allNodes.get(j).getX()) *HORIZONTAL_SCALE_FACTOR);
                     int endX = (int) ((Y_OFFSET + allNodes.get(j).getY()) *VERTICAL_SCALE_FACTOR);
 
-                    System.out.println("Drawing a line from "+startX+" To "+endX);
+                    /*System.out.println("Drawing a line from "+startX+" To "+endX);
                     System.out.println("The coords were "+allNodes.get(i).getX()+ " to "+allNodes.get(j).getX());
                     System.out.println("After step 1: "+(allNodes.get(i).getX()+X_OFFSET)+ " to "+(allNodes.get(j).getX()+X_OFFSET));
                     System.out.println("After step 2: "+((allNodes.get(i).getX()+X_OFFSET)*HORIZONTAL_SCALE_FACTOR)+" to "+ ((allNodes.get(j).getX()+X_OFFSET)*HORIZONTAL_SCALE_FACTOR));
-
+*/
                     g.drawLine(startX, 650-startY, endX, 650-endY);
                 }
             }
