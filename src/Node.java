@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
 public class Node {
-    private double[] coords;
-    private String roadName;
+    private final double[] coords;
+    private final String roadName;
     //private ArrayList<Integer> neighbours;
 
     public Node(double[] coords, String roadName){
@@ -27,10 +27,10 @@ public class Node {
         double x = coords[0];
         double y = coords[1];
 
-        String strx = Double.toString(x);
-        String stry = Double.toString(y);
+        String strX = Double.toString(x);
+        String strY = Double.toString(y);
 
-        return strx + "," + stry;
+        return strX + "," + strY;
     }
 
     //returns the distance to another node

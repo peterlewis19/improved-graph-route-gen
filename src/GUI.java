@@ -3,22 +3,14 @@ import javax.swing.*;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GUI extends JFrame {
-    private JLabel label;
-    private JTextField dataEntry;
-    private ArrayList<Node> allNodes;
-    private int[][] adjMatrix;
     private ArrayList<Integer> generatedRoute;
-    private static int minIndex;// = 0;
-    private static int maxIndex;
 
     public GUI(ArrayList<Node> allNodes, int[][] adjMatrix, String[] allNodeNames ) {
         setTitle("Route Planner");
@@ -26,9 +18,6 @@ public class GUI extends JFrame {
         setSize(800, 600);
         setLayout(null);
         setBounds(150, 50, 800, 700);
-
-        maxIndex = allNodes.size() - 1;
-        minIndex = 0;
 
         JLabel fieldCaption = new JLabel("Enter your start location: ");
         fieldCaption.setBounds(10, 10, 200, 30);
@@ -54,6 +43,7 @@ public class GUI extends JFrame {
         //Dont add the canvas until after
         //Draw Nodes then draw route once it has been entered
         Canvas backgroundMap = new Canvas(allNodes, adjMatrix);
+        //, allNodeNames);
         backgroundMap.setBounds(10, 70, 800, 650);
         backgroundMap.setOpaque(true);
 
@@ -75,186 +65,108 @@ public class GUI extends JFrame {
         setVisible(true);
         routeDrawing.setVisible(false);
 
-        goButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //this takes the input from the textfields and turns them to a digit
-                String start = startEntry.getText();
-                String destination = destinationEntry.getText();
-                System.out.println(start+ "," + destination);
+        goButton.addActionListener(e -> {
+            //this takes the input from the text fields and turns them to a digit
+            String start = startEntry.getText();
+            String destination = destinationEntry.getText();
+            //System.out.println(start+ "," + destination);
 
-                /*ArrayList<Integer> bestRoute = new ArrayList<>(Arrays.asList(799, 1503, 795, 792, 803, 786, 787, 788, 1754, 802));
 
+            int indexOfStart = getIndexOfRoadName(start, allNodeNames);
+            int indexOfDestination = getIndexOfRoadName(destination, allNodeNames);
+
+            //one of the inputs isnt contained in the array of names
+            if (indexOfStart == -1 || indexOfDestination == -1){
+                //error message window TBC
+                //System.out.println("At least one of these roads isn't included, try again with a different toad");
+                createWrongRoadWindow();
+
+
+            } else { //both of the names are valid, and associated with existing nodes
+                MainLoopOfGA newGA = new MainLoopOfGA(indexOfStart, indexOfDestination, allNodes, adjMatrix);
+                ArrayList<Integer> bestRoute = newGA.getBestRoute();
                 generatedRoute = bestRoute;
 
+                //z-order is determined by order of painting,
+                // so in order to draw route on top of map, have to repaint it over
                 backgroundMap.setVisible(false);
 
                 routeDrawing.setRoute(bestRoute);
-                //System.out.println("should be drawing the best route");
                 routeDrawing.setVisible(true);
                 routeDrawing.repaint();
 
                 backgroundMap.repaint();
-                backgroundMap.setVisible(true);*/
+                backgroundMap.setVisible(true);
 
-                //search a file for this String, hope it finds a match, which I can then turn into an integer
+                try {
+                    BufferedImage screenshot = getScreenshotOfBothCanvases(backgroundMap, routeDrawing);
+                    // write the image as a PNG
+                    ImageIO.write(
+                            screenshot,
+                            "png",
+                            new File("screenshot.png"));
 
-                //validate input is an integer
-                /*boolean isInt = false;
-                int startIndex = 0;
-                int endIndex = 1;*/
+                    SwingUtilities.invokeLater(() -> {
+                        PrinterJob job = PrinterJob.getPrinterJob();
+                        job.setPrintable(new Printing(screenshot));
+                        boolean doPrint = job.printDialog();
 
-                ///NEW RULES FOR TEXT INPUT
-                /// use binary search, if not found then return user the results next to where it ended,
-                /// these acts as a primitive form of suggested input
-
-                /*try {
-                    startIndex = Integer.parseInt(startEntry.getText());
-                    endIndex = Integer.parseInt(destinationEntry.getText());
-                    isInt = true;
-                } catch (NumberFormatException error) {
-                    isInt = false;
-                }*/
-
-                //TODO:
-                // - linear search name array for input
-                // - return index if its there
-                // - return nearby results if its not found (USING SORTED ARRAY) EXTENSION
-
-
-                // if value is present: get index
-                // else: return -1
-
-                int indexOfStart = getIndexOfRoadName(start, allNodeNames);
-                int indexOfDestination = getIndexOfRoadName(destination, allNodeNames);
-
-                //one of the inputs isnt contained in the array of names
-                if (indexOfStart == -1 || indexOfDestination == -1){
-                    //error message window TBC
-                    System.out.println("At least one of these roads isn't included, try again with a different toad");
-                } else{ //both of the names are valid, and associated with existing nodes
-                    MainLoopOfGA newGA = new MainLoopOfGA(indexOfStart, indexOfDestination, allNodes, adjMatrix);
-                    ArrayList<Integer> bestRoute = newGA.getBestRoute();
-
-                    generatedRoute = bestRoute;
-
-                    backgroundMap.setVisible(false);
-
-                    routeDrawing.setRoute(bestRoute);
-                    System.out.println("should be drawing the best route");
-                    routeDrawing.setVisible(true);
-                    routeDrawing.repaint();
-
-                    backgroundMap.repaint();
-                    backgroundMap.setVisible(true);
-                }
-
-
-
-
-                /*if (isInt) {
-                    //if input is invalid, give error message
-                    if (startIndex < 0 || startIndex > maxIndex - 2 || endIndex < 0 || endIndex > maxIndex - 2) {
-                        System.out.println("ERROR IN INPUT");
-                        createOutOfRangeWindow();
-                    } else {
-                        MainLoopOfGA newGA = new MainLoopOfGA(Integer.parseInt(startEntry.getText()), Integer.parseInt(destinationEntry.getText()), allNodes, adjMatrix);
-                        ArrayList<Integer> bestRoute = newGA.getBestRoute();
-
-                        generatedRoute = bestRoute;
-
-                        backgroundMap.setVisible(false);
-
-                        routeDrawing.setRoute(bestRoute);
-                        routeDrawing.setVisible(true);
-                        routeDrawing.repaint();
-
-                        backgroundMap.repaint();
-                        backgroundMap.setVisible(true);
-
-                        //System.out.println("displaying map...");
-
-
-                        try {
-                            BufferedImage screenshot = getScreenshotOfBothCanvases(backgroundMap, routeDrawing);
-                            // write the image as a PNG
-                            ImageIO.write(
-                                    screenshot,
-                                    "png",
-                                    new File("screenshot.png"));
-
-                            //Printing this screenshot out
-                            //TODO: make this happen on the press of a print button
-                            PrinterJob job = PrinterJob.getPrinterJob();
-                            /*job.setPrintable(new Printing(screenshot));
-                            boolean doPrint = job.printDialog();
-
-                            if (doPrint) {
-                                try {
-                                    job.print();
-                                } catch (PrinterException exc) {
-                                    // The job did not successfully
-                                    // complete
-                                }
+                        if (doPrint) {
+                            try {
+                                job.print();
+                            } catch (PrinterException exc) {
+                                // The job did not successfully
+                                // complete
+                                createUnableToScreenshotWindow();
                             }
-                        } catch(Exception err) {
-                            err.printStackTrace();
                         }
-
-                    }
-                } else {
-                    createNotAnIntWindow();
+                    });
+                } catch (Exception err) {
+                    //err.printStackTrace();
+                    createUnableToScreenshotWindow();
                 }
-
-                //route is found much faster, but this delays it by a lot (roughly 30 seconds)
-                // i think theres no way of avoiding this, so I just made more generations to ensure an optimal route still within the time
-            }*/
             }
         });
-        setVisible(true);
+        //setVisible(true);
         getContentPane().setComponentZOrder(goButton, 0);
 
 
     }
 
-    private static void createOutOfRangeWindow() {
-        JFrame frame = new JFrame("Input out of range");
+    private static void createWrongRoadWindow() {
+        JFrame frame = new JFrame("Road Name Error");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        createOutOfRangeUI(frame);
-        frame.setSize(300, 100);
+        createWrongRoadUI(frame);
+        frame.setSize(400, 100);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
-    private static void createNotAnIntWindow() {
-        JFrame frame = new JFrame("Input is not an integer");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        createNotAnIntUI(frame);
-        frame.setSize(300, 100);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
-
-    private static void createOutOfRangeUI(final JFrame frame) {
-        //JPanel panel = new JPanel();
-        JLabel warningMessage = new JLabel("Input has to be between " + minIndex + " and " + (maxIndex - 2));
+    private static void createWrongRoadUI(final JFrame frame) {
+        JLabel warningMessage = new JLabel("One of these roads isn't included in the database, please try again.");
         warningMessage.setHorizontalAlignment(JLabel.CENTER);
         frame.add(warningMessage);
 
         frame.setDefaultCloseOperation(HIDE_ON_CLOSE);
-
     }
 
-    private static void createNotAnIntUI(final JFrame frame) {
-        JPanel panel = new JPanel();
-        JLabel warningMessage = new JLabel("Input must be a number, such as 1 or 23");
+    private static void createUnableToScreenshotWindow() {
+        JFrame frame = new JFrame("Screenshot Error");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        createUnableToScreenshotUI(frame);
+        frame.setSize(400, 100);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    private static void createUnableToScreenshotUI(final JFrame frame) {
+        JLabel warningMessage = new JLabel("Currently unable to print the screen off, please close and open the program.");
         warningMessage.setHorizontalAlignment(JLabel.CENTER);
         frame.add(warningMessage);
 
-        frame.setDefaultCloseOperation(frame.HIDE_ON_CLOSE);
-
+        frame.setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
 
     public BufferedImage getScreenshotOfBothCanvases(Component component1, Component component2) {

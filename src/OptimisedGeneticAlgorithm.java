@@ -5,80 +5,104 @@ import java.util.Random;
 import java.util.HashMap;
 
 public class OptimisedGeneticAlgorithm {
-    // --- Optimized Data Structures ---
-    // 1. Adjacency List for O(degree) neighbor lookup (O(N) in original)
+    //adjList faster than adjMat for neighbour lookup
     private final ArrayList<Integer>[] adjList;
-
-    // 2. Cost Matrix for O(1) distance lookups (avoids repeated distanceTo calculations)
     private final double[][] costMat;
 
     private final ArrayList<Node> allNodes;
-    private final int N; // Total number of nodes
+    private final int numOfNodes;
+
+    private final double MAX_DISTANCE = 1.0e9; // Still needed for the costMat check
 
     public OptimisedGeneticAlgorithm(ArrayList<Node> allNodes, int[][] adjMat) {
         this.allNodes = allNodes;
-        this.N = allNodes.size();
+        this.numOfNodes = allNodes.size();
 
-        // --- 1. Graph Data Structure Initialization ---
-        this.adjList = new ArrayList[N];
-        this.costMat = new double[N][N];
+        this.adjList = new ArrayList[numOfNodes];
+        this.costMat = new double[numOfNodes][numOfNodes];
 
-        // Initialize structures from the input Adjacency Matrix
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < numOfNodes; i++) {
             adjList[i] = new ArrayList<>();
-            for (int j = 0; j < N; j++) {
+            for (int j = 0; j < numOfNodes; j++) {
                 if (adjMat[i][j] == 1) {
-                    // Pre-calculate distance (Edge Weight)
+                    // distances all calculated at start, saving time
                     double distance = allNodes.get(i).distanceTo(allNodes.get(j));
                     costMat[i][j] = distance;
 
-                    // Build Adjacency List
+                    // adds a value to the arraylist for each row
                     adjList[i].add(j);
                 } else {
-                    // Use a large penalty/infinity for non-existent edges
-                    costMat[i][j] = Double.POSITIVE_INFINITY;
+                    // add very high cost to unconnected edges
+                    // to deal with rare bug where non-true edges are forced to connect
+                    costMat[i][j] = MAX_DISTANCE;
                 }
             }
         }
     }
 
-    /**
-     * O(L) - Uses pre-calculated cost matrix for O(1) distance lookups.
-     */
+    //uses costMat to lookup distances
     public double evaluateFitness(ArrayList<Integer> route) {
         double totalDistance = 0;
 
         for (int i = 0; i < route.size() - 1; i++) {
             int nodeA = route.get(i);
-            int nodeB = route.get(i + 1);
+            int nodeB = route.get(i+1);
 
-            // Use the pre-calculated cost matrix for distance
-            double distance = costMat[nodeA][nodeB];
-            totalDistance += distance;
+            // this is where lots of time is saved, no calculating on the spot
+            double distance = allNodes.get(nodeA).distanceTo(allNodes.get(nodeB));//[nodeA][nodeB];
 
-            // Penalty for non-connected paths (using infinity check)
-            if (distance == Double.POSITIVE_INFINITY) {
-                totalDistance += 10000000;
+            // Count the errors
+            if (distance < MAX_DISTANCE) {
+                totalDistance += distance;
             }
         }
+
         return totalDistance;
     }
 
-    /**
-     * O(L^2) in worst case, but can be optimized with search window.
-     * Original O(L1 * L2) is kept, but comments suggest optimization.
-     */
+    // OptimisedGeneticAlgorithm.java (Inside evaluateFitness)
+    public double evaluateFitness2(ArrayList<Integer> route) {
+        double totalDistance = 0;
+        int disconnectionCount = 0;
+
+        for (int i = 0; i < route.size() - 1; i++) {
+            int nodeA = route.get(i);
+            int nodeB = route.get(i+1);
+
+            // 1. Get the distance from the pre-calculated cost matrix (O(1) lookup)
+            double distance = costMat[nodeA][nodeB];
+
+            // 2. Check for penalty based on the costMat value
+            if (distance >= MAX_DISTANCE) {
+                disconnectionCount++;
+            } else {
+                // Only add the actual distance if the edge is valid
+                totalDistance += distance;
+            }
+        }
+
+        return totalDistance;
+    }
+
+    //crosses over multiple routes where they are closest
     public ArrayList<Integer> crossOver3(ArrayList<Integer> route1, ArrayList<Integer> route2) {
+        Random random = new Random();
+
         ArrayList<Integer> finalRoute = new ArrayList<>();
-        double shortestDistance = Double.MAX_VALUE;
+        double shortestDistance = MAX_DISTANCE;
         int currentClosestRoute1 = 0;
         int currentClosestRoute2 = 0;
 
-        // Optimization: Limit search space for closest nodes (e.g., to the last/first 10 nodes)
-        // This changes the complexity from O(L1*L2) to O(1) for long routes.
+        // don't check between the entire routes, only the middle parts, as that is where the most distance can be saved
         int searchWindow = 10;
-        int startI = Math.max(2, route1.size() - searchWindow);
-        int endJ = Math.min(route2.size() - 1, searchWindow + 1);
+        int randomWindowAdjustmentI = random.nextInt(0,15);
+        int randomWindowAdjustmentJ = random.nextInt(0,15);
+        int startI = Math.max(2, route1.size() - searchWindow - randomWindowAdjustmentI);
+        int endJ = Math.min(route2.size() - 1, searchWindow + 1 + randomWindowAdjustmentJ);
+
+        //take the roughly 25 shortest and choose one at random
+        ArrayList<double[]> candidateCuts = new ArrayList<>();
+        double shortestDistanceThreshold = 0.005; // Check all points within 1 unit of the shortest
 
         // find closest nodes between routes apart from endpoints
         for (int i = 2; i < startI; i++) {
@@ -92,19 +116,30 @@ public class OptimisedGeneticAlgorithm {
                     currentClosestRoute1 = i;
                     currentClosestRoute2 = j;
                 }
+
+                // Add all points that are within a small threshold of the absolute shortest
+                if (testDistance <= shortestDistance + shortestDistanceThreshold) {
+                    candidateCuts.add(new double[] {testDistance, (double)i, (double)j});
+                }
+
+                if (!candidateCuts.isEmpty()) {
+                    double[] chosenCut = candidateCuts.get(random.nextInt(candidateCuts.size()));
+                    currentClosestRoute1 = (int)chosenCut[1];
+                    currentClosestRoute2 = (int)chosenCut[2];
+                }
             }
         }
 
-        // ... rest of the method logic remains the same ...
         List<Integer> finalRoutePart1 = route1.subList(0, currentClosestRoute1);
         List<Integer> finalRoutePart2 = route2.subList(currentClosestRoute2 + 1, route2.size());
 
         int nodeA = route1.get(currentClosestRoute1);
         int nodeB = route2.get(currentClosestRoute2);
 
-        // Assuming createRandomRoute4 is now efficient
+        //random walk in between the routes
         List<Integer> path = createRandomRoute4(nodeA, nodeB);
 
+        // adds all component parts of the route
         finalRoute.addAll(finalRoutePart1);
         finalRoute.addAll(path);
         finalRoute.addAll(finalRoutePart2);
@@ -112,36 +147,34 @@ public class OptimisedGeneticAlgorithm {
         return finalRoute;
     }
 
+    //randomly changes a route
     public ArrayList<Integer> mutate2(ArrayList<Integer> route) {
-        ArrayList<Integer> finalRoute = new ArrayList<>();
         Random rand = new Random();
 
-        // Pick 2 random, distinct indices
+        // picks 2 different random nodes along the route
         int a = rand.nextInt(route.size());
         int b = rand.nextInt(route.size());
         while (a == b) {
             b = rand.nextInt(route.size());
         }
 
-        // Ensure a is the starting index and b is the ending index of the segment
         int startIndex = Math.min(a, b);
         int endIndex = Math.max(a, b);
 
-        // Get node indices for the path start and end
         int nodeA = route.get(startIndex);
         int nodeB = route.get(endIndex);
 
-        // 1. Get the segment before the mutation point (O(startIndex))
+        /*MUTATION:
+         - pick 2 random nodes along a route
+         - randomly walk between them
+         - new route is the same route but the random walk between a and b is now included
+        * */
         List<Integer> routeBefore = route.subList(0, startIndex);
-        finalRoute.addAll(routeBefore);
+        ArrayList<Integer> finalRoute = new ArrayList<>(routeBefore);
 
-        // 2. Generate a new, random path between nodeA and nodeB
         ArrayList<Integer> mutatedInbetweenRoute = createRandomRoute4(nodeA, nodeB);
         finalRoute.addAll(mutatedInbetweenRoute);
 
-        // 3. Get the segment after the mutation point (O(L - endIndex))
-        // We add the segment starting from endIndex + 1 because the path generator
-        // already includes the start node (nodeA) and the end node (nodeB).
         if (endIndex + 1 < route.size()) {
             List<Integer> routeAfter = route.subList(endIndex + 1, route.size());
             finalRoute.addAll(routeAfter);
@@ -150,109 +183,42 @@ public class OptimisedGeneticAlgorithm {
         return finalRoute;
     }
 
+        public ArrayList<Integer> removeAllRedundantLoops(ArrayList<Integer> route) {
+        Stack routeAsStack = new Stack();
 
-    /**
-     * O(L) - Uses HashMap for O(1) lookup of previously visited nodes, 
-     * dramatically improving performance over the original O(L^2) approach.
-     */
-    public ArrayList<Integer> removeRedundantMoves(ArrayList<Integer> route) {
-        // Map: Node ID -> First Index it appeared at in the route
-        HashMap<Integer, Integer> nodeToIndexMap = new HashMap<>();
-
-        int finalStartIndex = -1;
-        int finalEndIndex = -1;
-
-        //Doesn't deal with ABA, so hardcode that as a base case
-
-        // Iterate through the route once (O(L))
-        for (int i = 0; i < route.size(); i++) {
-            int currentNode = route.get(i);
-
-            if (nodeToIndexMap.containsKey(currentNode)) {
-                // Duplicate found. Start of the loop is the previous index.
-                int startIndex = nodeToIndexMap.get(currentNode);
-                int endIndex = i;
-
-                if (endIndex-startIndex == 2){
-
-                }
-
-                // Keep track of the longest loop found so far
-                if (endIndex - startIndex >= finalEndIndex - finalStartIndex) {
-                    finalStartIndex = startIndex;
-                    finalEndIndex = endIndex;
-                }
-            } else {
-                // First time seeing this node, record its index.
-                nodeToIndexMap.put(currentNode, i);
-            }
-        }
-
-        // If a loop was found, cut it out
-        if (finalStartIndex != -1) {
-            // Cut: keep (0 to finalStartIndex) and (finalEndIndex to end)
-            List<Integer> routeBeforeCutOff = route.subList(0, finalStartIndex);
-            List<Integer> routeAfterCutOff = route.subList(finalEndIndex, route.size());
-
-            ArrayList<Integer> finalRoute = new ArrayList<>();
-            finalRoute.addAll(routeBeforeCutOff);
-            finalRoute.addAll(routeAfterCutOff);
-            return finalRoute;
-        }
-
-        return route; // No loop found
-    }
-
-
-    public List<Integer> removeAllRedundantLoops(List<Integer> route) {
-        // 1. Stack to build the simplified route (acts as the path segment)
-        ArrayList<Integer> resultRoute = new ArrayList<>();
-
-        // 2. Set for O(1) look-up of nodes currently in resultRoute
+        // has a faster .contains method
+        // which makes HashSet more appropriate
         HashSet<Integer> pathSet = new HashSet<>();
 
-        // O(N) iteration over the original route
         for (int currentNode : route) {
+            // not been seen yet
             if (!pathSet.contains(currentNode)) {
-                // Case 1: New node. Extend the simplified path.
-                resultRoute.add(currentNode);
+                routeAsStack.push(currentNode);
                 pathSet.add(currentNode);
-            } else {
-                // Case 2: Duplicate found (Loop detected). Cut out the redundant segment.
+            } else { // a loop has been found
+                int poppedNode = -1;
 
-                // Pop nodes off the stack and remove them from the set
-                // until the first appearance of currentNode is also popped.
-                int poppedNode;
-                do {
-                    // Get the last node added (top of the stack)
-                    int lastIndex = resultRoute.size() - 1;
-                    poppedNode = resultRoute.remove(lastIndex);
-
-                    // Remove the node from the path set
+                //remove the node at the top of the stack until it reaches the duplicate
+                while (poppedNode != currentNode){
+                    // removes the nodes in the redundant loop
+                    poppedNode = routeAsStack.pop();
                     pathSet.remove(poppedNode);
-                } while (poppedNode != currentNode);
+                }
 
-                // At this point, currentNode is the next node to be added
-                // to the path, so we continue the outer loop.
-                // (The currentNode is either a new path or it just started
-                // a loop, which is now cleared. It will be added in the
-                // next iteration if it's new, or in a later iteration.)
-
-                // Re-add the current node to the path
-                resultRoute.add(currentNode);
+                // re adds the node that made up either side of the loop
+                routeAsStack.add(currentNode);
                 pathSet.add(currentNode);
             }
         }
 
-        return resultRoute;
+        return routeAsStack;
     }
 
-    /**
-     * O(N * degree) worst-case - Uses Adjacency List for O(degree) neighbor lookup,
-     * replacing the original O(N) lookup. This significantly improves performance.
-     */
+
     public ArrayList<Integer> createRandomRoute4(int nodeA, int nodeB) {
         ArrayList<Integer> route = new ArrayList<>();
+
+        //use hashset again for fast .contains
         HashSet<Integer> visited = new HashSet<>();
         Random rand = new Random();
 
@@ -260,33 +226,34 @@ public class OptimisedGeneticAlgorithm {
         route.add(current);
         visited.add(current);
 
-        int maxSteps = N * 15; // Safety cap
+        int maxSteps = numOfNodes * 10;
         int steps = 0;
 
         while (current != nodeB && steps < maxSteps) {
-
-            // --- Optimized Neighbor Collection: O(degree) ---
-            // Use the pre-built Adjacency List instead of iterating N nodes
             ArrayList<Integer> neighbours = adjList[current];
 
-            if (neighbours.isEmpty()) break;
-
-            // --- A*-inspired scoring (optimized slightly by using costMat implicitly) ---
+            // uses some aspects of A* to speed up random route generation
             double bestScore = Double.POSITIVE_INFINITY;
             int bestNext = -1;
 
             for (int neigh : neighbours) {
-                // Use distanceTo/costMat for heuristic h
-                double h = allNodes.get(neigh).distanceTo(allNodes.get(nodeB));
+                // distance from goal is the A* addition, closer to goal the better that node is
+                double distFromGoal = costMat[neigh][nodeB];
 
-                // Penalize revisiting visited nodes
-                double revisitPenalty = visited.contains(neigh) ? 10000 : 0;
+                // disincentivise visiting already visited nodes
+                double revisitCost;
+
+                if (visited.contains(neigh)){
+                    revisitCost = 0.001;
+                }else{
+                    revisitCost = 0;
+                }
 
                 // Randomness for exploration (can be scaled/decayed for better results)
                 // A double from 0 to 15
                 double randomness = rand.nextDouble() * 15;
 
-                double score = h + revisitPenalty + randomness;
+                double score = distFromGoal + revisitCost + randomness;
 
                 if (score < bestScore) {
                     bestScore = score;
@@ -294,9 +261,7 @@ public class OptimisedGeneticAlgorithm {
                 }
             }
 
-            if (bestNext == -1) break; // Should not happen if neighbours is not empty
-
-            // --- Move to selected node ---
+            // moves to next node
             current = bestNext;
             route.add(current);
             visited.add(current);

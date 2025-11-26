@@ -1,32 +1,32 @@
 import java.util.*;
 
 public class MainLoopOfGA {
-    private ArrayList<Integer> bestRoute;
-    public MainLoopOfGA(int START_INDEX, int END_INDEX, ArrayList<Node> allNodes, int[][] adjMat){
+    private ArrayList<Integer> shortestRouteOverall;
+
+    public MainLoopOfGA(int START_INDEX, int END_INDEX, ArrayList<Node> allNodes, int[][] adjMat) {
         OptimisedGeneticAlgorithm ga = new OptimisedGeneticAlgorithm(allNodes, adjMat);
 
-        int routesPerGeneration = 200;
-        int bestNofGeneration = 30;
+        int routesPerGeneration = 250;
+        int bestNofGeneration = 35;
         int nOfGenerations = 100;
 
-        ArrayList<ArrayList<Integer>> allRoutesInThisGeneration = new ArrayList<ArrayList<Integer>>();
-        ArrayList<ArrayList<Integer>> allRoutesInThisGenerationWithNoOneOffLoops = new ArrayList<ArrayList<Integer>>();
+        ArrayList<ArrayList<Integer>> allRoutesInThisGeneration = new ArrayList<>();
 
-        //initialises routes
+        //initialises routes, without any loops
         for (int i = 0; i < routesPerGeneration; i++) {
-            //System.out.println("RANDOMISING A ROUTE...");
             ArrayList<Integer> randomRoute = ga.createRandomRoute4(START_INDEX, END_INDEX);
-            //now perfect
             ArrayList<Integer> routeWithNoLoops = (ArrayList<Integer>) ga.removeAllRedundantLoops(randomRoute);
 
-            //System.out.println("Routes have been addedd");
-            allRoutesInThisGeneration.add(routeWithNoLoops);
+            //add only valid routes
+            if (routeWithNoLoops.getLast() == END_INDEX){
+                allRoutesInThisGeneration.add(routeWithNoLoops);
+            }
         }
 
         //shortest routes by distance
         allRoutesInThisGeneration.sort(Comparator.comparingDouble(ga::evaluateFitness));
 
-        //shortest N of the generation
+        //shortest N of the generation, for initial generation
         ArrayList<ArrayList<Integer>> bestRoutesInGeneration = ArrayListHelp.sliceArrayListInteger(0, bestNofGeneration, allRoutesInThisGeneration);
 
 
@@ -39,16 +39,15 @@ public class MainLoopOfGA {
 
         Random rand = new Random();
 
-
-
+        //initialise this value
+        shortestRouteOverall = allRoutesInThisGeneration.getFirst();
+        ArrayList<Integer> bestRouteOfGen = new ArrayList<>();
 
         //Main loop of the Genetic Algorithm
         for (int j = 0; j < nOfGenerations; j++) {
             //take best N
             // combine them into say 100 routes, take N best and repeat until small
-
-            ArrayList<ArrayList<Integer>> currentGenerationOfRoutes = new ArrayList<ArrayList<Integer>>();
-            //bestRoutesInGeneration = new ArrayList<ArrayList<Integer>>();
+            allRoutesInThisGeneration = new ArrayList<>();
 
             //crosses over every single possible route between all routes in array
             for (int route1 = 0; route1 < bestNofGeneration; route1++) {
@@ -60,56 +59,78 @@ public class MainLoopOfGA {
                         route = ga.mutate2(route);
                     }
 
-                    route = (ArrayList<Integer>) ga.removeAllRedundantLoops(route);
-                    currentGenerationOfRoutes.add(route);
+                    route = ga.removeAllRedundantLoops(route);
+
+                    //add only valid routes
+                    if (route.getLast() == END_INDEX){
+                        allRoutesInThisGeneration.add(route);
+                    }
                 }
             }
-            Collections.sort(currentGenerationOfRoutes, Comparator.comparingDouble(ga::evaluateFitness));
 
+            double longestRouteLengthOfThisGen = 0;
 
-            int longestRouteLengthOfThisGen = (int)(ga.evaluateFitness(allRoutesInThisGeneration.getLast()));
+            for (int i = 0; i < allRoutesInThisGeneration.size(); i++) {
+                if (ga.evaluateFitness(allRoutesInThisGeneration.get(i)) > longestRouteLengthOfThisGen) {
+                    longestRouteLengthOfThisGen = ga.evaluateFitness(allRoutesInThisGeneration.get(i));
+                }
+            }
+
+            longestRouteLengthOfThisGen = longestRouteLengthOfThisGen * 10000;
+
+            //System.out.println("LONGEST ROUTE IS: " + longestRouteLengthOfThisGen);
+            //THIS IS 0- ERROR FOUND
 
             //fitness scores placed into here, for roulette selection to occur
-            int[] fitnessScoresOfGen = new int[allRoutesInThisGeneration.size()];
+            double[] fitnessScoresOfGen = new double[allRoutesInThisGeneration.size()];
 
             // a route has a fitness score of at least 1 if they have the longest route, and a score of
             // LONGEST - SHORTEST for the shortest route, which should have the greatest value
-            for (int i=0; i < allRoutesInThisGeneration.size(); i++){
-                fitnessScoresOfGen[i] = longestRouteLengthOfThisGen + 1 - (int)ga.evaluateFitness(allRoutesInThisGeneration.get(i));
+            for (int i = 0; i < allRoutesInThisGeneration.size(); i++) {
+                fitnessScoresOfGen[i] = longestRouteLengthOfThisGen + 1 - (ga.evaluateFitness(allRoutesInThisGeneration.get(i)) * 10000);
             }
 
-            int[] cumulativeFitnessScoresOfGen = new int[allRoutesInThisGeneration.size()];
+            /*System.out.println(fitnessScoresOfGen[6]);
+            System.out.println(fitnessScoresOfGen[15]);
+            System.out.println(fitnessScoresOfGen[300]);
+            //FITNESS SCORES ARE ALL 1*/
+
+            double[] cumulativeFitnessScoresOfGen = new double[allRoutesInThisGeneration.size()];
 
             //adds the score based on the previous value, making it cumulative
             cumulativeFitnessScoresOfGen[0] = fitnessScoresOfGen[0];
 
-            for (int i=1; i < allRoutesInThisGeneration.size(); i++) {
+            for (int i = 1; i < allRoutesInThisGeneration.size(); i++) {
                 cumulativeFitnessScoresOfGen[i] = cumulativeFitnessScoresOfGen[i - 1] + fitnessScoresOfGen[i];
             }
 
-
-            for (int i=0; i < bestNofGeneration; i++){
-                int rouletteBall = rand.nextInt(cumulativeFitnessScoresOfGen[allRoutesInThisGeneration.size()-1]);
+            for (int i = 0; i < bestNofGeneration; i++) {
+                //from 0 to largest value of roulette wheel
+                int rouletteBall = rand.nextInt((int) cumulativeFitnessScoresOfGen[allRoutesInThisGeneration.size() - 1]);
 
                 //binary search to find where the roulette ball can be inserted
-                int index = binarySearchForRoulette(rouletteBall, cumulativeFitnessScoresOfGen, 0, cumulativeFitnessScoresOfGen.length-1);
+                int index = binarySearchForRoulette(rouletteBall, cumulativeFitnessScoresOfGen, 0, cumulativeFitnessScoresOfGen.length - 1);
                 bestRoutesInGeneration.add(allRoutesInThisGeneration.get(index));
             }
 
             //bestRoutesInGeneration = new ArrayList<ArrayList<Integer>>();
         }
-        bestRoute = bestRoutesInGeneration.get(0);
+        bestRouteOfGen = bestRoutesInGeneration.getFirst();
+
+        if (ga.evaluateFitness(bestRouteOfGen) < ga.evaluateFitness(shortestRouteOverall)) {
+            shortestRouteOverall = bestRouteOfGen;
+        }
     }
 
 
     public ArrayList<Integer> getBestRoute(){
-        return bestRoute;
+        return shortestRouteOverall;
     }
 
-    private int binarySearchForRoulette(int rouletteBall, int[] rouletteWheel, int lowerBound, int upperBound){
-        int mid = (int)((lowerBound+upperBound)/2);
+    private int binarySearchForRoulette(int rouletteBall, double[] rouletteWheel, int lowerBound, int upperBound){
+        int mid = ((lowerBound+upperBound)/2);
         if (upperBound > lowerBound) {
-            mid = (int) (lowerBound + (upperBound - lowerBound) / 2);
+            mid = (lowerBound + (upperBound - lowerBound) / 2);
 
             // If the element is present at the
             // middle itself
