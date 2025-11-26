@@ -8,9 +8,9 @@ public class Main {
         * so have to work out how to parse them precisely.
         * */
 
-        ArrayList<Node> allNodes = FileHandler.readNodesFromFile("full_node_data_clean.csv");
-        int[][] adjacencyMatrix = FileHandler.getMatrixData("full_adj_matrix.csv");
-        String[] allNodeNames = FileHandler.getNodeNameArray("full_node_data_clean.csv");
+        ArrayList<Node> allNodes = FileHandler.readNodesFromFile("small_node_data_clean.csv");
+        int[][] adjacencyMatrix = FileHandler.getMatrixData("small_adj_matrix.csv");
+        String[] allNodeNames = FileHandler.getNodeNameArray("small_node_data_clean.csv");
 
         GUI graphics = new GUI(allNodes, adjacencyMatrix, allNodeNames);
 

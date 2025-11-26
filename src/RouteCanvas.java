@@ -6,10 +6,10 @@ public class RouteCanvas extends JComponent {
 
     private ArrayList<Node> allNodes;
     private int[][] adjMatrix;
-    private double HORIZONTAL_SCALE_FACTOR = 9000;
-    private double VERTICAL_SCALE_FACTOR = 8000;
-    private double Y_OFFSET = -0.06;
-    private double X_OFFSET = -51.41;
+    private double HORIZONTAL_SCALE_FACTOR = 22000;
+    private double VERTICAL_SCALE_FACTOR = 21000;
+    private double Y_OFFSET = -0.11;
+    private double X_OFFSET = -51.44;
     private static ArrayList<Integer> generatedRoute;
 
     public RouteCanvas(ArrayList<Integer> generatedRoute, ArrayList<Node> allNodes){

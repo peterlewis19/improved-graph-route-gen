@@ -76,13 +76,13 @@ public class OptimisedGeneticAlgorithm {
 
         // Optimization: Limit search space for closest nodes (e.g., to the last/first 10 nodes)
         // This changes the complexity from O(L1*L2) to O(1) for long routes.
-        // int searchWindow = 10;
-        // int startI = Math.max(2, route1.size() - searchWindow);
-        // int endJ = Math.min(route2.size() - 1, searchWindow + 1);
+        int searchWindow = 10;
+        int startI = Math.max(2, route1.size() - searchWindow);
+        int endJ = Math.min(route2.size() - 1, searchWindow + 1);
 
         // find closest nodes between routes apart from endpoints
-        for (int i = 2; i < route1.size(); i++) {
-            for (int j = 2; j < route2.size(); j++) {
+        for (int i = 2; i < startI; i++) {
+            for (int j = 2; j < endJ; j++) {
                 Node node1 = allNodes.get(route1.get(i));
                 Node node2 = allNodes.get(route2.get(j));
                 double testDistance = node1.distanceTo(node2);
@@ -162,6 +162,8 @@ public class OptimisedGeneticAlgorithm {
         int finalStartIndex = -1;
         int finalEndIndex = -1;
 
+        //Doesn't deal with ABA, so hardcode that as a base case
+
         // Iterate through the route once (O(L))
         for (int i = 0; i < route.size(); i++) {
             int currentNode = route.get(i);
@@ -171,8 +173,12 @@ public class OptimisedGeneticAlgorithm {
                 int startIndex = nodeToIndexMap.get(currentNode);
                 int endIndex = i;
 
+                if (endIndex-startIndex == 2){
+
+                }
+
                 // Keep track of the longest loop found so far
-                if (endIndex - startIndex > finalEndIndex - finalStartIndex) {
+                if (endIndex - startIndex >= finalEndIndex - finalStartIndex) {
                     finalStartIndex = startIndex;
                     finalEndIndex = endIndex;
                 }
@@ -197,6 +203,50 @@ public class OptimisedGeneticAlgorithm {
         return route; // No loop found
     }
 
+
+    public List<Integer> removeAllRedundantLoops(List<Integer> route) {
+        // 1. Stack to build the simplified route (acts as the path segment)
+        ArrayList<Integer> resultRoute = new ArrayList<>();
+
+        // 2. Set for O(1) look-up of nodes currently in resultRoute
+        HashSet<Integer> pathSet = new HashSet<>();
+
+        // O(N) iteration over the original route
+        for (int currentNode : route) {
+            if (!pathSet.contains(currentNode)) {
+                // Case 1: New node. Extend the simplified path.
+                resultRoute.add(currentNode);
+                pathSet.add(currentNode);
+            } else {
+                // Case 2: Duplicate found (Loop detected). Cut out the redundant segment.
+
+                // Pop nodes off the stack and remove them from the set
+                // until the first appearance of currentNode is also popped.
+                int poppedNode;
+                do {
+                    // Get the last node added (top of the stack)
+                    int lastIndex = resultRoute.size() - 1;
+                    poppedNode = resultRoute.remove(lastIndex);
+
+                    // Remove the node from the path set
+                    pathSet.remove(poppedNode);
+                } while (poppedNode != currentNode);
+
+                // At this point, currentNode is the next node to be added
+                // to the path, so we continue the outer loop.
+                // (The currentNode is either a new path or it just started
+                // a loop, which is now cleared. It will be added in the
+                // next iteration if it's new, or in a later iteration.)
+
+                // Re-add the current node to the path
+                resultRoute.add(currentNode);
+                pathSet.add(currentNode);
+            }
+        }
+
+        return resultRoute;
+    }
+
     /**
      * O(N * degree) worst-case - Uses Adjacency List for O(degree) neighbor lookup,
      * replacing the original O(N) lookup. This significantly improves performance.
@@ -210,7 +260,7 @@ public class OptimisedGeneticAlgorithm {
         route.add(current);
         visited.add(current);
 
-        int maxSteps = N * 4; // Safety cap
+        int maxSteps = N * 15; // Safety cap
         int steps = 0;
 
         while (current != nodeB && steps < maxSteps) {
@@ -233,7 +283,8 @@ public class OptimisedGeneticAlgorithm {
                 double revisitPenalty = visited.contains(neigh) ? 10000 : 0;
 
                 // Randomness for exploration (can be scaled/decayed for better results)
-                double randomness = rand.nextDouble() * 10.0;
+                // A double from 0 to 15
+                double randomness = rand.nextDouble() * 15;
 
                 double score = h + revisitPenalty + randomness;
 
@@ -255,9 +306,4 @@ public class OptimisedGeneticAlgorithm {
 
         return route;
     }
-
-    // Mutate and removeRedundantLoops (with HashMap fix) would be updated similarly
-    // Helper methods 'contains' and 'getIndex' are removed as they are inefficient.
-    // The user must ensure ArrayListHelp.sliceArrayList is efficient or use standard subList.
-    // ...
 }

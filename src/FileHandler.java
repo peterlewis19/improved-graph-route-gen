@@ -55,6 +55,13 @@ public class FileHandler {
         String roadName = splitLine[2];
 
         //turns the strings of "51.4683" to 51.4683, for example
+        if (latString.startsWith("\uFEFF")) {
+            latString = latString.substring(1);
+        }
+
+        if (lonString.startsWith("\uFEFF")) {
+            lonString = lonString.substring(1);
+        }
         double lat = Double.parseDouble(latString);
         double lon = Double.parseDouble(lonString);
         double[] coords = new double[]{lat,lon};

@@ -17,7 +17,7 @@ public class MainLoopOfGA {
             //System.out.println("RANDOMISING A ROUTE...");
             ArrayList<Integer> randomRoute = ga.createRandomRoute4(START_INDEX, END_INDEX);
             //now perfect
-            ArrayList<Integer> routeWithNoLoops = ga.removeRedundantMoves(randomRoute);
+            ArrayList<Integer> routeWithNoLoops = (ArrayList<Integer>) ga.removeAllRedundantLoops(randomRoute);
 
             //System.out.println("Routes have been addedd");
             allRoutesInThisGeneration.add(routeWithNoLoops);
@@ -60,7 +60,7 @@ public class MainLoopOfGA {
                         route = ga.mutate2(route);
                     }
 
-                    route = ga.removeRedundantMoves(route);
+                    route = (ArrayList<Integer>) ga.removeAllRedundantLoops(route);
                     currentGenerationOfRoutes.add(route);
                 }
             }
