@@ -26,7 +26,6 @@ public class FileHandler {
                 BufferedReader br = new BufferedReader(fr);
         ) {
             line = br.readLine();
-
             //until it runs out of lines, read the data from it
             while (line != null){
                 allNodes.add(getNodeData(line));

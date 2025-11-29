@@ -49,7 +49,7 @@ public class OptimisedGeneticAlgorithm {
             int nodeB = route.get(i+1);
 
             // this is where lots of time is saved, no calculating on the spot
-            double distance = allNodes.get(nodeA).distanceTo(allNodes.get(nodeB));//[nodeA][nodeB];
+            double distance = costMat[nodeA][nodeB];
 
             // Count the errors
             if (distance < MAX_DISTANCE) {
@@ -94,15 +94,15 @@ public class OptimisedGeneticAlgorithm {
         int currentClosestRoute2 = 0;
 
         // don't check between the entire routes, only the middle parts, as that is where the most distance can be saved
-        int searchWindow = 10;
-        int randomWindowAdjustmentI = random.nextInt(0,15);
-        int randomWindowAdjustmentJ = random.nextInt(0,15);
+        int searchWindow = 7;
+        int randomWindowAdjustmentI = random.nextInt(0,5);
+        int randomWindowAdjustmentJ = random.nextInt(0,5);
         int startI = Math.max(2, route1.size() - searchWindow - randomWindowAdjustmentI);
         int endJ = Math.min(route2.size() - 1, searchWindow + 1 + randomWindowAdjustmentJ);
 
         //take the roughly 25 shortest and choose one at random
         ArrayList<double[]> candidateCuts = new ArrayList<>();
-        double shortestDistanceThreshold = 0.005; // Check all points within 1 unit of the shortest
+        double shortestDistanceThreshold = 5; // Check all points within 1 unit of the shortest
 
         // find closest nodes between routes apart from endpoints
         for (int i = 2; i < startI; i++) {

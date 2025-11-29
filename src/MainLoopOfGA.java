@@ -76,10 +76,10 @@ public class MainLoopOfGA {
                 }
             }
 
+            // x10000 because using geographical lon and lat, they are all very similar
+            // and very close to 0, meaning casting them into an int for the
+            // bucketing later was ineffective
             longestRouteLengthOfThisGen = longestRouteLengthOfThisGen * 10000;
-
-            //System.out.println("LONGEST ROUTE IS: " + longestRouteLengthOfThisGen);
-            //THIS IS 0- ERROR FOUND
 
             //fitness scores placed into here, for roulette selection to occur
             double[] fitnessScoresOfGen = new double[allRoutesInThisGeneration.size()];
@@ -89,11 +89,6 @@ public class MainLoopOfGA {
             for (int i = 0; i < allRoutesInThisGeneration.size(); i++) {
                 fitnessScoresOfGen[i] = longestRouteLengthOfThisGen + 1 - (ga.evaluateFitness(allRoutesInThisGeneration.get(i)) * 10000);
             }
-
-            /*System.out.println(fitnessScoresOfGen[6]);
-            System.out.println(fitnessScoresOfGen[15]);
-            System.out.println(fitnessScoresOfGen[300]);
-            //FITNESS SCORES ARE ALL 1*/
 
             double[] cumulativeFitnessScoresOfGen = new double[allRoutesInThisGeneration.size()];
 
@@ -113,7 +108,6 @@ public class MainLoopOfGA {
                 bestRoutesInGeneration.add(allRoutesInThisGeneration.get(index));
             }
 
-            //bestRoutesInGeneration = new ArrayList<ArrayList<Integer>>();
         }
         bestRouteOfGen = bestRoutesInGeneration.getFirst();
 

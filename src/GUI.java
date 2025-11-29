@@ -77,8 +77,7 @@ public class GUI extends JFrame {
 
             //one of the inputs isnt contained in the array of names
             if (indexOfStart == -1 || indexOfDestination == -1){
-                //error message window TBC
-                //System.out.println("At least one of these roads isn't included, try again with a different toad");
+                //error message window
                 createWrongRoadWindow();
 
 
@@ -138,13 +137,13 @@ public class GUI extends JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         createWrongRoadUI(frame);
-        frame.setSize(400, 100);
+        frame.setSize(450, 100);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     private static void createWrongRoadUI(final JFrame frame) {
-        JLabel warningMessage = new JLabel("One of these roads isn't included in the database, please try again.");
+        JLabel warningMessage = new JLabel("At least one of these roads isn't included in the database, please try again.");
         warningMessage.setHorizontalAlignment(JLabel.CENTER);
         frame.add(warningMessage);
 
@@ -156,13 +155,13 @@ public class GUI extends JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         createUnableToScreenshotUI(frame);
-        frame.setSize(400, 100);
+        frame.setSize(450, 100);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     private static void createUnableToScreenshotUI(final JFrame frame) {
-        JLabel warningMessage = new JLabel("Currently unable to print the screen off, please close and open the program.");
+        JLabel warningMessage = new JLabel("Currently unable to print, please close and reopen the program.");
         warningMessage.setHorizontalAlignment(JLabel.CENTER);
         frame.add(warningMessage);
 
@@ -194,7 +193,7 @@ public class GUI extends JFrame {
     }
 
     //returns index or otherwise returns -1
-    // will return the first istance of a roadName
+    // will return the first instance of a roadName
     private static int getIndexOfRoadName(String roadName, String[] arrayOfRoadNames){
         boolean isFound = false;
         int count = 0;
