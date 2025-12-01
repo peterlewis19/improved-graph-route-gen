@@ -17,7 +17,7 @@ public class GUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLayout(null);
-        setBounds(150, 50, 800, 700);
+        setBounds(560, 220, 800, 700);
 
         JLabel fieldCaption = new JLabel("Enter your start location: ");
         fieldCaption.setBounds(10, 10, 200, 30);

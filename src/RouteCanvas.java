@@ -72,11 +72,6 @@ public class RouteCanvas extends JComponent {
             g2d.drawLine(startX, 650-startY, endX, 650-endY);
         }
 
-        //System.out.print(allNodes.get(generatedRoute.get(generatedRoute.size()-1)).getRoadName());
-        //System.out.println("START COORD: "+startX+","+(650-startY)+" AND END COORD: "+endX+","+(650-endY));
-
-        //System.out.println("DRAWING ROUTE");
-
     }
 
     public void setRoute(ArrayList<Integer> route){
