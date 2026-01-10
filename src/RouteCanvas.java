@@ -40,16 +40,16 @@ public class RouteCanvas extends JComponent {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        double HORIZONTAL_SCALE_FACTOR = 22000;
-        double VERTICAL_SCALE_FACTOR = 21000;
-        double Y_OFFSET = -0.11;
-        double X_OFFSET = -51.44;
+        double HORIZONTAL_SCALE_FACTOR = 35000;
+        double VERTICAL_SCALE_FACTOR = 35000;
+        double Y_OFFSET = -0.119;
+        double X_OFFSET = -51.449;
 
         // Set rendering hints for smooth lines
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Set line color and thickness
-        g2d.setColor(Color.BLACK);
+        g2d.setColor(Color.RED);
         g2d.setStroke(new BasicStroke(4)); // Line thickness = 2
 
         /*int startX = 0;

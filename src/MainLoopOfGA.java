@@ -7,19 +7,22 @@ public class MainLoopOfGA {
         OptimisedGeneticAlgorithm ga = new OptimisedGeneticAlgorithm(allNodes, adjMat);
 
         int routesPerGeneration = 250;
-        int bestNofGeneration = 35;
-        int nOfGenerations = 100;
+        int bestNofGeneration = 25;
+        int nOfGenerations = 40;
 
         ArrayList<ArrayList<Integer>> allRoutesInThisGeneration = new ArrayList<>();
 
         //initialises routes, without any loops
-        for (int i = 0; i < routesPerGeneration; i++) {
+        int added = 0;
+        while (added < routesPerGeneration){
+        //for (int i = 0; i < routesPerGeneration; i++) {
             ArrayList<Integer> randomRoute = ga.createRandomRoute4(START_INDEX, END_INDEX);
             ArrayList<Integer> routeWithNoLoops = (ArrayList<Integer>) ga.removeAllRedundantLoops(randomRoute);
 
             //add only valid routes
             if (routeWithNoLoops.getLast() == END_INDEX){
                 allRoutesInThisGeneration.add(routeWithNoLoops);
+                added++;
             }
         }
 

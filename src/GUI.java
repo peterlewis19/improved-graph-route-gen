@@ -31,7 +31,6 @@ public class GUI extends JFrame {
         JTextField destinationEntry = new JTextField();
         destinationEntry.setBounds(510, 10, 200, 30);
 
-
         JButton goButton = new JButton("GO");
         goButton.setBounds(720, 10, 55, 30);
 
@@ -42,13 +41,13 @@ public class GUI extends JFrame {
 
         //Dont add the canvas until after
         //Draw Nodes then draw route once it has been entered
-        Canvas backgroundMap = new Canvas(allNodes, adjMatrix);
+        Canvas backgroundMap = new Canvas(allNodes, adjMatrix, allNodeNames);
         //, allNodeNames);
-        backgroundMap.setBounds(10, 70, 800, 650);
+        backgroundMap.setBounds(10, 50, 800, 650);
         backgroundMap.setOpaque(true);
 
         RouteCanvas routeDrawing = new RouteCanvas(generatedRoute, allNodes);
-        routeDrawing.setBounds(10, 70, 800, 650);
+        routeDrawing.setBounds(10, 50, 800, 650);
         routeDrawing.setBackground(Color.white);
         routeDrawing.setOpaque(false);
 
