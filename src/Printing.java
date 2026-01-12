@@ -29,7 +29,6 @@ public class Printing implements Printable {
 
         // Now we perform our rendering
         ((Graphics2D) g).drawImage(screenshot, null,0,0);
-        //g.drawString("Hello world!", 100, 100);
 
         // tell the caller that this page is part
         // of the printed document

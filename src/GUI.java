@@ -12,7 +12,8 @@ import java.util.ArrayList;
 public class GUI extends JFrame {
     private ArrayList<Integer> generatedRoute;
 
-    public GUI(ArrayList<Node> allNodes, int[][] adjMatrix, String[] allNodeNames ) {
+
+    public GUI(ArrayList<Node> allNodes, int[][] adjMatrix, String[] allNodeNames, String AREA_NAME) {
         setTitle("Route Planner");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -23,30 +24,32 @@ public class GUI extends JFrame {
         fieldCaption.setBounds(10, 10, 200, 30);
 
         JTextField startEntry = new JTextField();
-        startEntry.setBounds(160, 10, 200, 30);
+        startEntry.setBounds(160, 10, 120, 30);
 
         JLabel destinationCaption = new JLabel("Enter your destination: ");
-        destinationCaption.setBounds(370, 10, 200, 30);
+        destinationCaption.setBounds(290, 10, 200, 30);
 
         JTextField destinationEntry = new JTextField();
-        destinationEntry.setBounds(510, 10, 200, 30);
+        destinationEntry.setBounds(430, 10, 120, 30);
 
-        JButton goButton = new JButton("GO");
-        goButton.setBounds(720, 10, 55, 30);
+        //Calculate Route | Print
+        JButton goButton = new JButton("Calculate Route");
+        goButton.setBounds(560, 10, 140, 30);
+
+        JButton printButton = new JButton("Print");
+        printButton.setBounds(710,10,70,30);
 
         JPanel panel = new JPanel();
         panel.setBackground(Color.lightGray);
         panel.setBounds(0, 0, 800, 50);
 
-
         //Dont add the canvas until after
         //Draw Nodes then draw route once it has been entered
-        Canvas backgroundMap = new Canvas(allNodes, adjMatrix, allNodeNames);
-        //, allNodeNames);
+        Canvas backgroundMap = new Canvas(allNodes, adjMatrix, AREA_NAME);
         backgroundMap.setBounds(10, 50, 800, 650);
         backgroundMap.setOpaque(true);
 
-        RouteCanvas routeDrawing = new RouteCanvas(generatedRoute, allNodes);
+        RouteCanvas routeDrawing = new RouteCanvas(generatedRoute, allNodes, AREA_NAME);
         routeDrawing.setBounds(10, 50, 800, 650);
         routeDrawing.setBackground(Color.white);
         routeDrawing.setOpaque(false);
@@ -58,6 +61,7 @@ public class GUI extends JFrame {
         add(backgroundMap);
         add(routeDrawing);
         add(panel);
+        add(printButton);
         add(goButton);
         backgroundMap.setVisible(true);
 
@@ -68,15 +72,12 @@ public class GUI extends JFrame {
             //this takes the input from the text fields and turns them to a digit
             String start = startEntry.getText();
             String destination = destinationEntry.getText();
-            //System.out.println(start+ "," + destination);
-
 
             int indexOfStart = getIndexOfRoadName(start, allNodeNames);
             int indexOfDestination = getIndexOfRoadName(destination, allNodeNames);
 
             //one of the inputs isnt contained in the array of names
             if (indexOfStart == -1 || indexOfDestination == -1){
-                //error message window
                 createWrongRoadWindow();
 
 
@@ -95,42 +96,44 @@ public class GUI extends JFrame {
 
                 backgroundMap.repaint();
                 backgroundMap.setVisible(true);
-
-                try {
-                    BufferedImage screenshot = getScreenshotOfBothCanvases(backgroundMap, routeDrawing);
-                    // write the image as a PNG
-                    ImageIO.write(
-                            screenshot,
-                            "png",
-                            new File("screenshot.png"));
-
-                    SwingUtilities.invokeLater(() -> {
-                        PrinterJob job = PrinterJob.getPrinterJob();
-                        job.setPrintable(new Printing(screenshot));
-                        boolean doPrint = job.printDialog();
-
-                        if (doPrint) {
-                            try {
-                                job.print();
-                            } catch (PrinterException exc) {
-                                // The job did not successfully
-                                // complete
-                                createUnableToScreenshotWindow();
-                            }
-                        }
-                    });
-                } catch (Exception err) {
-                    //err.printStackTrace();
-                    createUnableToScreenshotWindow();
-                }
             }
-        });
-        //setVisible(true);
-        getContentPane().setComponentZOrder(goButton, 0);
 
+            });
+
+        printButton.addActionListener(f -> {
+            try {
+                BufferedImage screenshot = getScreenshotOfBothCanvases(backgroundMap, routeDrawing);
+                // write the image as a PNG
+                ImageIO.write(
+                        screenshot,
+                        "png",
+                        new File("screenshot.png"));
+
+
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setPrintable(new Printing(screenshot));
+                boolean doPrint = job.printDialog();
+
+                if (doPrint) {
+                    try {
+                        job.print();
+                    } catch (PrinterException exc) {
+                        // The job did not successfully
+                        // complete
+                        createUnableToScreenshotWindow();
+                    }
+                }
+            } catch (Exception err) {
+                createUnableToScreenshotWindow();
+            }
+
+        });
+        getContentPane().setComponentZOrder(goButton, 0);
+        getContentPane().setComponentZOrder(printButton,0);
 
     }
 
+    //a road name inputted isn't in the data
     private static void createWrongRoadWindow() {
         JFrame frame = new JFrame("Road Name Error");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -184,7 +187,7 @@ public class GUI extends JFrame {
             component2.printAll(g2d);
         }
 
-        //paint bacnground first, then generated route
+        //paint background first, then generated route
         component1.printAll(g2d);
 
         g2d.dispose();
@@ -211,6 +214,7 @@ public class GUI extends JFrame {
 
         return count;
     }
+
 
 
 }

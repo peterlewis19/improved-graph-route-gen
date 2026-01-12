@@ -8,14 +8,13 @@ public class MainLoopOfGA {
 
         int routesPerGeneration = 250;
         int bestNofGeneration = 25;
-        int nOfGenerations = 40;
+        int nOfGenerations = 60;
 
         ArrayList<ArrayList<Integer>> allRoutesInThisGeneration = new ArrayList<>();
 
         //initialises routes, without any loops
         int added = 0;
         while (added < routesPerGeneration){
-        //for (int i = 0; i < routesPerGeneration; i++) {
             ArrayList<Integer> randomRoute = ga.createRandomRoute4(START_INDEX, END_INDEX);
             ArrayList<Integer> routeWithNoLoops = (ArrayList<Integer>) ga.removeAllRedundantLoops(randomRoute);
 
@@ -30,11 +29,9 @@ public class MainLoopOfGA {
         allRoutesInThisGeneration.sort(Comparator.comparingDouble(ga::evaluateFitness));
 
         //shortest N of the generation, for initial generation
-        ArrayList<ArrayList<Integer>> bestRoutesInGeneration = ArrayListHelp.sliceArrayListInteger(0, bestNofGeneration, allRoutesInThisGeneration);
+        ArrayList<ArrayList<Integer>> bestRoutesInGeneration = sliceArrayListInteger(0, bestNofGeneration, allRoutesInThisGeneration);
 
-
-        /*
-            work out fitness score (higher is better) by getting the longest route this generation
+        /*            work out fitness score (higher is better) by getting the longest route this generation
             and taking each other score away from the longest route length, +1, such that the longest
             route has a 1 in however many chance of being chosen. and the shortest route has the
             greatest chance of being chosen
@@ -57,7 +54,7 @@ public class MainLoopOfGA {
                 for (int route2 = 0; route2 < bestNofGeneration; route2++) {
                     ArrayList<Integer> route = ga.crossOver3(bestRoutesInGeneration.get(route1), bestRoutesInGeneration.get(route2));
 
-                    //mutate maybe 3% of routes
+                    //mutate 3% of routes
                     if (rand.nextInt(100) <= 4) {
                         route = ga.mutate2(route);
                     }
@@ -71,6 +68,7 @@ public class MainLoopOfGA {
                 }
             }
 
+            //finds the longest route for roulette selection
             double longestRouteLengthOfThisGen = 0;
 
             for (int i = 0; i < allRoutesInThisGeneration.size(); i++) {
@@ -145,5 +143,15 @@ public class MainLoopOfGA {
         } else{
             return mid;
         }
+    }
+
+    private ArrayList<ArrayList<Integer>> sliceArrayListInteger(int startIndex, int endIndex, ArrayList<ArrayList<Integer>> arrayListToChop){
+        ArrayList<ArrayList<Integer>> slicedArrayList = new ArrayList<>();
+
+        for (int i=startIndex; i < endIndex; i++){
+            slicedArrayList.add(arrayListToChop.get(i));
+        }
+
+        return slicedArrayList;
     }
 }

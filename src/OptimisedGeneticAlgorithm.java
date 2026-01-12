@@ -12,7 +12,7 @@ public class OptimisedGeneticAlgorithm {
     private final ArrayList<Node> allNodes;
     private final int numOfNodes;
 
-    private final double MAX_DISTANCE = 1.0e9; // Still needed for the costMat check
+    private final double MAX_DISTANCE = 1.0e9;
 
     public OptimisedGeneticAlgorithm(ArrayList<Node> allNodes, int[][] adjMat) {
         this.allNodes = allNodes;
@@ -60,30 +60,6 @@ public class OptimisedGeneticAlgorithm {
         return totalDistance;
     }
 
-    // OptimisedGeneticAlgorithm.java (Inside evaluateFitness)
-    public double evaluateFitness2(ArrayList<Integer> route) {
-        double totalDistance = 0;
-        int disconnectionCount = 0;
-
-        for (int i = 0; i < route.size() - 1; i++) {
-            int nodeA = route.get(i);
-            int nodeB = route.get(i+1);
-
-            // 1. Get the distance from the pre-calculated cost matrix (O(1) lookup)
-            double distance = costMat[nodeA][nodeB];
-
-            // 2. Check for penalty based on the costMat value
-            if (distance >= MAX_DISTANCE) {
-                disconnectionCount++;
-            } else {
-                // Only add the actual distance if the edge is valid
-                totalDistance += distance;
-            }
-        }
-
-        return totalDistance;
-    }
-
     //crosses over multiple routes where they are closest
     public ArrayList<Integer> crossOver3(ArrayList<Integer> route1, ArrayList<Integer> route2) {
         Random random = new Random();
@@ -94,18 +70,16 @@ public class OptimisedGeneticAlgorithm {
         int currentClosestRoute2 = 0;
 
         // don't check between the entire routes, only the middle parts, as that is where the most distance can be saved
-        int searchWindow = 7;
-        int randomWindowAdjustmentI = random.nextInt(0,5);
-        int randomWindowAdjustmentJ = random.nextInt(0,5);
-        int startI = Math.max(2, route1.size() - searchWindow - randomWindowAdjustmentI);
-        int endJ = Math.min(route2.size() - 1, searchWindow + 1 + randomWindowAdjustmentJ);
+        //int searchWindow = 7;
+        int endI = route1.size() - 2;
+        int endJ = route2.size() - 2;
 
         //take the roughly 25 shortest and choose one at random
         ArrayList<double[]> candidateCuts = new ArrayList<>();
-        double shortestDistanceThreshold = 5; // Check all points within 1 unit of the shortest
+        double shortestDistanceThreshold = 5; // check all shortish routes
 
         // find closest nodes between routes apart from endpoints
-        for (int i = 2; i < startI; i++) {
+        for (int i = 2; i < endI; i++) {
             for (int j = 2; j < endJ; j++) {
                 Node node1 = allNodes.get(route1.get(i));
                 Node node2 = allNodes.get(route2.get(j));
@@ -117,7 +91,8 @@ public class OptimisedGeneticAlgorithm {
                     currentClosestRoute2 = j;
                 }
 
-                // Add all points that are within a small threshold of the absolute shortest
+                // add all points that are pretty short, and randomly choose one
+                // to ensure some randomness
                 if (testDistance <= shortestDistance + shortestDistanceThreshold) {
                     candidateCuts.add(new double[] {testDistance, (double)i, (double)j});
                 }
@@ -229,6 +204,7 @@ public class OptimisedGeneticAlgorithm {
         int maxSteps = numOfNodes * 10;
         int steps = 0;
 
+        //while it hasnt reached the end yet
         while (current != nodeB && steps < maxSteps) {
             ArrayList<Integer> neighbours = adjList[current];
 
@@ -241,16 +217,13 @@ public class OptimisedGeneticAlgorithm {
                 double distFromGoal = costMat[neigh][nodeB];
 
                 // disincentivise visiting already visited nodes
-                double revisitCost;
+                double revisitCost = 0;
 
                 if (visited.contains(neigh)){
                     revisitCost = 0.001;
-                }else{
-                    revisitCost = 0;
                 }
 
-                // Randomness for exploration (can be scaled/decayed for better results)
-                // A double from 0 to 15
+                // randomness for more exploring
                 double randomness = rand.nextDouble() * 15;
 
                 double score = distFromGoal + revisitCost + randomness;

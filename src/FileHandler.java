@@ -5,13 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class FileHandler {
-    //1. read road names, parallel to the nodes they accompany |❎|
-    //2. read coords for each node, in order to make the map |❎|
-    //3. read adjacency matrix for each node |❌|
-
-    //do I make an adjacency matrix data structure or do i add neighbours to a node
-    // adding neighbours to a node, will be called experiment 1 THIS IS TOO HARD NVM
-    // add neighbours using a 2d array
     private static int numOfNodes;
 
     //adds all Nodes from the input file
@@ -48,19 +41,10 @@ public class FileHandler {
         // starts off "51.4683, 0.1212, Rochester Avenue"
         //splitLine = ["51.4683", "0.1212", "Rochester Avenue"]
         String[] splitLine = rawLine.split(",");
-        //latString, lonString = "51.4683", "0.1212"
         String latString = splitLine[0];
         String lonString = splitLine[1];
         String roadName = splitLine[2];
 
-        //turns the strings of "51.4683" to 51.4683, for example
-        if (latString.startsWith("\uFEFF")) {
-            latString = latString.substring(1);
-        }
-
-        if (lonString.startsWith("\uFEFF")) {
-            lonString = lonString.substring(1);
-        }
         double lat = Double.parseDouble(latString);
         double lon = Double.parseDouble(lonString);
         double[] coords = new double[]{lat,lon};
@@ -68,6 +52,7 @@ public class FileHandler {
         return new Node(coords,roadName);
     }
 
+    //gets the data from the matrix as an adjacency matrix
     public static int[][] getMatrixData(String fileName){
         int[][] adjMat = new int[numOfNodes][numOfNodes];
         String line = "";
@@ -95,7 +80,6 @@ public class FileHandler {
                     //there is an edge between the line given to this method and currentColumn if value is 1
                     adjMat[rowCount][i] = value;
                     adjMat[i][rowCount] = value;
-                    //bc of the symmetry
                 }
 
                 line=br.readLine();
@@ -111,6 +95,7 @@ public class FileHandler {
         return adjMat;
     }
 
+    // reads the names of each node in the data file
     public static String[] getNodeNameArray(String fileName){
         String[] namesOfAllNodes = new String[numOfNodes];
         String line = "";

@@ -3,7 +3,6 @@ import java.util.ArrayList;
 public class Node {
     private final double[] coords;
     private final String roadName;
-    //private ArrayList<Integer> neighbours;
 
     public Node(double[] coords, String roadName){
         this.coords = coords;
@@ -23,14 +22,13 @@ public class Node {
     }
 
     public String toString(){
-        double[] coords = getCoords();
-        double x = coords[0];
-        double y = coords[1];
+        double x = getX();
+        double y = getY();
 
         String strX = Double.toString(x);
         String strY = Double.toString(y);
 
-        return strX + "," + strY;
+        return strX + "," + strY + ", "+getRoadName();
     }
 
     //returns the distance to another node
