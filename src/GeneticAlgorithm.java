@@ -2,9 +2,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.HashMap;
 
-public class OptimisedGeneticAlgorithm {
+public class GeneticAlgorithm {
     //adjList faster than adjMat for neighbour lookup
     private final ArrayList<Integer>[] adjList;
     private final double[][] costMat;
@@ -14,7 +13,7 @@ public class OptimisedGeneticAlgorithm {
 
     private final double MAX_DISTANCE = 1.0e9;
 
-    public OptimisedGeneticAlgorithm(ArrayList<Node> allNodes, int[][] adjMat) {
+    public GeneticAlgorithm(ArrayList<Node> allNodes, int[][] adjMat) {
         this.allNodes = allNodes;
         this.numOfNodes = allNodes.size();
 
@@ -112,7 +111,7 @@ public class OptimisedGeneticAlgorithm {
         int nodeB = route2.get(currentClosestRoute2);
 
         //random walk in between the routes
-        List<Integer> path = createRandomRoute4(nodeA, nodeB);
+        List<Integer> path = createRandomRoute(nodeA, nodeB);
 
         // adds all component parts of the route
         finalRoute.addAll(finalRoutePart1);
@@ -123,7 +122,7 @@ public class OptimisedGeneticAlgorithm {
     }
 
     //randomly changes a route
-    public ArrayList<Integer> mutate2(ArrayList<Integer> route) {
+    public ArrayList<Integer> mutate(ArrayList<Integer> route) {
         Random rand = new Random();
 
         // picks 2 different random nodes along the route
@@ -147,9 +146,10 @@ public class OptimisedGeneticAlgorithm {
         List<Integer> routeBefore = route.subList(0, startIndex);
         ArrayList<Integer> finalRoute = new ArrayList<>(routeBefore);
 
-        ArrayList<Integer> mutatedInbetweenRoute = createRandomRoute4(nodeA, nodeB);
+        ArrayList<Integer> mutatedInbetweenRoute = createRandomRoute(nodeA, nodeB);
         finalRoute.addAll(mutatedInbetweenRoute);
 
+        //if the inbetween route doesnt connect to the last node
         if (endIndex + 1 < route.size()) {
             List<Integer> routeAfter = route.subList(endIndex + 1, route.size());
             finalRoute.addAll(routeAfter);
@@ -158,39 +158,39 @@ public class OptimisedGeneticAlgorithm {
         return finalRoute;
     }
 
-        public ArrayList<Integer> removeAllRedundantLoops(ArrayList<Integer> route) {
-        Stack routeAsStack = new Stack();
+    public ArrayList<Integer> removeAllRedundantLoops(ArrayList<Integer> route) {
+    Stack routeAsStack = new Stack();
 
         // has a faster .contains method
         // which makes HashSet more appropriate
-        HashSet<Integer> pathSet = new HashSet<>();
+    HashSet<Integer> pathSet = new HashSet<>();
 
-        for (int currentNode : route) {
+    for (int currentNode : route) {
             // not been seen yet
-            if (!pathSet.contains(currentNode)) {
-                routeAsStack.push(currentNode);
-                pathSet.add(currentNode);
-            } else { // a loop has been found
-                int poppedNode = -1;
+        if (!pathSet.contains(currentNode)) {
+            routeAsStack.push(currentNode);
+            pathSet.add(currentNode);
+        } else { // a loop has been found
+            int poppedNode = -1;
 
                 //remove the node at the top of the stack until it reaches the duplicate
-                while (poppedNode != currentNode){
+            while (poppedNode != currentNode){
                     // removes the nodes in the redundant loop
-                    poppedNode = routeAsStack.pop();
-                    pathSet.remove(poppedNode);
-                }
+                poppedNode = routeAsStack.pop();
+                pathSet.remove(poppedNode);
+            }
 
                 // re adds the node that made up either side of the loop
-                routeAsStack.add(currentNode);
-                pathSet.add(currentNode);
-            }
+            routeAsStack.add(currentNode);
+            pathSet.add(currentNode);
         }
+    }
 
         return routeAsStack;
     }
 
 
-    public ArrayList<Integer> createRandomRoute4(int nodeA, int nodeB) {
+    public ArrayList<Integer> createRandomRoute(int nodeA, int nodeB) {
         ArrayList<Integer> route = new ArrayList<>();
 
         //use hashset again for fast .contains
@@ -243,5 +243,15 @@ public class OptimisedGeneticAlgorithm {
         }
 
         return route;
+    }
+
+    public double calcOverallTrueDistance(ArrayList<Integer> route){
+        double distance = 0;
+
+        for (int i=0; i < route.size()-1; i++){
+            distance = distance + allNodes.get(route.get(i)).distanceInMetres(allNodes.get(route.get(i)));
+        }
+
+        return distance;
     }
 }

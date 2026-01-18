@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -23,12 +22,21 @@ public class RouteCanvas extends BaseCanvas {
         g2d.setStroke(new BasicStroke(4));
 
         //draw the route assuming lines are connected
-        for (int i = 0; i < generatedRoute.size()-1; i++){
-            int startY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(i)).getX()) *HORIZONTAL_SCALE_FACTOR);
-            int startX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(i)).getY()) *VERTICAL_SCALE_FACTOR);
+        int startY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(0)).getX()) * X_SCALE_FACTOR);
+        int startX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(0)).getY()) * Y_SCALE_FACTOR);
 
-            int endY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(i+1)).getX()) *HORIZONTAL_SCALE_FACTOR);
-            int endX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(i+1)).getY()) *VERTICAL_SCALE_FACTOR);
+        int endY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(generatedRoute.size()-1)).getX()) * X_SCALE_FACTOR);
+        int endX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(generatedRoute.size()-1)).getY()) * Y_SCALE_FACTOR);
+
+        g2d.drawString("Start", startX,650- startY);
+        g2d.drawString("End", endX, 650-endY);
+
+        for (int i = 1; i < generatedRoute.size()-1; i++){
+            startY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(i)).getX()) * X_SCALE_FACTOR);
+            startX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(i)).getY()) * Y_SCALE_FACTOR);
+
+            endY = (int) ((X_OFFSET + allNodes.get(generatedRoute.get(i+1)).getX()) * X_SCALE_FACTOR);
+            endX = (int) ((Y_OFFSET + allNodes.get(generatedRoute.get(i+1)).getY()) * Y_SCALE_FACTOR);
 
             //System.out.print(allNodes.get(generatedRoute.get(i)).getRoadName()+ " to ");
 

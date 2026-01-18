@@ -1,20 +1,11 @@
-import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
-//import static java.lang.Math.abs;
-//import static java.lang.Math.min;
-
 public class Canvas extends BaseCanvas {
-
-    //private final ArrayList<Node> allNodes;
     private final int[][] adjMatrix;
-    //private final String[] allRoadNames;
-    //private ArrayList<Integer> generatedRoute;
 
     public Canvas(ArrayList<Node> allNodes, int[][] adjMatrix, String AREA_NAME){
         super(allNodes,AREA_NAME);
@@ -36,11 +27,10 @@ public class Canvas extends BaseCanvas {
         //just drawing dots, so start and end X and Y will be the same
         for (Node allNode : allNodes) {
 
-            int startY = (int) ((X_OFFSET + allNode.getX()) * HORIZONTAL_SCALE_FACTOR);
-            int startX = (int) ((Y_OFFSET + allNode.getY()) * VERTICAL_SCALE_FACTOR);
+            int startY = (int) ((X_OFFSET + allNode.getX()) * X_SCALE_FACTOR);
+            int startX = (int) ((Y_OFFSET + allNode.getY()) * Y_SCALE_FACTOR);
 
             g.drawLine(startX, 650 - startY, startX, 650 - startY);
-            //g.drawString(allRoadNames[i], startX, 650-startY);
         }
 
         //draws lines based on an adjacency matrix
@@ -54,11 +44,11 @@ public class Canvas extends BaseCanvas {
 
                 //if the row and column share an edge
                 if (adjMatrix[i][j] >= 1){
-                    int startY = (int) ((X_OFFSET + allNodes.get(i).getX()) *HORIZONTAL_SCALE_FACTOR);
-                    int startX = (int) ((Y_OFFSET + allNodes.get(i).getY()) *VERTICAL_SCALE_FACTOR);
+                    int startY = (int) ((X_OFFSET + allNodes.get(i).getX()) * X_SCALE_FACTOR);
+                    int startX = (int) ((Y_OFFSET + allNodes.get(i).getY()) * Y_SCALE_FACTOR);
 
-                    int endY = (int) ((X_OFFSET + allNodes.get(j).getX()) *HORIZONTAL_SCALE_FACTOR);
-                    int endX = (int) ((Y_OFFSET + allNodes.get(j).getY()) *VERTICAL_SCALE_FACTOR);
+                    int endY = (int) ((X_OFFSET + allNodes.get(j).getX()) * X_SCALE_FACTOR);
+                    int endX = (int) ((Y_OFFSET + allNodes.get(j).getY()) * Y_SCALE_FACTOR);
 
                     g.drawLine(startX, 650-startY, endX, 650-endY);
                 }

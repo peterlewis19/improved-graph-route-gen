@@ -25,7 +25,7 @@ public class Printing implements Printable {
         Graphics2D g2d = (Graphics2D)g;
         g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
         g2d.rotate(Math.toRadians(90));
-        g2d.translate(0,-screenshot.getHeight()+80);
+        g2d.translate(20,-screenshot.getHeight()+40);
 
         // Now we perform our rendering
         ((Graphics2D) g).drawImage(screenshot, null,0,0);

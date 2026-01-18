@@ -18,7 +18,7 @@ public class GUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLayout(null);
-        setBounds(560, 220, 800, 700);
+        setBounds(50, 50, 800, 700);
 
         JLabel fieldCaption = new JLabel("Enter your start location: ");
         fieldCaption.setBounds(10, 10, 200, 30);
@@ -54,6 +54,12 @@ public class GUI extends JFrame {
         routeDrawing.setBackground(Color.white);
         routeDrawing.setOpaque(false);
 
+        //adds a box for displaying the length of the route
+        JPanel distanceBox = new JPanel();
+        distanceBox.setBackground(Color.LIGHT_GRAY);
+        distanceBox.setBounds(700, 50, 90,30);
+        distanceBox.setVisible(false);
+
         add(fieldCaption);
         add(startEntry);
         add(destinationCaption);
@@ -63,6 +69,7 @@ public class GUI extends JFrame {
         add(panel);
         add(printButton);
         add(goButton);
+        add(distanceBox);
         backgroundMap.setVisible(true);
 
         setVisible(true);
@@ -96,6 +103,17 @@ public class GUI extends JFrame {
 
                 backgroundMap.repaint();
                 backgroundMap.setVisible(true);
+
+                //for displaying the distance of the route
+                // roughly converts into miles
+                String distance = String.format("%.2f",(newGA.getBestRouteLength()/0.02));
+                JLabel distanceToDraw = new JLabel(distance+" miles");
+                distanceBox.removeAll();
+                distanceBox.add(distanceToDraw);
+                distanceBox.setVisible(true);
+                distanceBox.repaint();
+                getContentPane().setComponentZOrder(distanceBox, 0);
+                //distanceBox.getComponent(0).repaint();
             }
 
             });
@@ -118,8 +136,7 @@ public class GUI extends JFrame {
                     try {
                         job.print();
                     } catch (PrinterException exc) {
-                        // The job did not successfully
-                        // complete
+                        // The job did not successfully complete
                         createUnableToScreenshotWindow();
                     }
                 }
@@ -134,7 +151,7 @@ public class GUI extends JFrame {
     }
 
     //a road name inputted isn't in the data
-    private static void createWrongRoadWindow() {
+    private void createWrongRoadWindow() {
         JFrame frame = new JFrame("Road Name Error");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -144,7 +161,7 @@ public class GUI extends JFrame {
         frame.setVisible(true);
     }
 
-    private static void createWrongRoadUI(final JFrame frame) {
+    private void createWrongRoadUI(final JFrame frame) {
         JLabel warningMessage = new JLabel("At least one of these roads isn't included in the database, please try again.");
         warningMessage.setHorizontalAlignment(JLabel.CENTER);
         frame.add(warningMessage);
@@ -152,7 +169,7 @@ public class GUI extends JFrame {
         frame.setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
 
-    private static void createUnableToScreenshotWindow() {
+    private void createUnableToScreenshotWindow() {
         JFrame frame = new JFrame("Screenshot Error");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -162,7 +179,7 @@ public class GUI extends JFrame {
         frame.setVisible(true);
     }
 
-    private static void createUnableToScreenshotUI(final JFrame frame) {
+    private void createUnableToScreenshotUI(final JFrame frame) {
         JLabel warningMessage = new JLabel("Currently unable to print, please close and reopen the program.");
         warningMessage.setHorizontalAlignment(JLabel.CENTER);
         frame.add(warningMessage);
@@ -170,7 +187,7 @@ public class GUI extends JFrame {
         frame.setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
 
-    public BufferedImage getScreenshotOfBothCanvases(Component component1, Component component2) {
+    private BufferedImage getScreenshotOfBothCanvases(Component component1, Component component2) {
         int width = Math.max(component1.getWidth(), component2.getWidth());
         int height = Math.max(component1.getHeight(), component2.getHeight());
 
@@ -196,7 +213,7 @@ public class GUI extends JFrame {
 
     //returns index or otherwise returns -1
     // will return the first instance of a roadName
-    private static int getIndexOfRoadName(String roadName, String[] arrayOfRoadNames){
+    private int getIndexOfRoadName(String roadName, String[] arrayOfRoadNames){
         boolean isFound = false;
         int count = 0;
 
