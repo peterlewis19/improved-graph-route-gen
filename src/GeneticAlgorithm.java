@@ -244,14 +244,4 @@ public class GeneticAlgorithm {
 
         return route;
     }
-
-    public double calcOverallTrueDistance(ArrayList<Integer> route){
-        double distance = 0;
-
-        for (int i=0; i < route.size()-1; i++){
-            distance = distance + allNodes.get(route.get(i)).distanceInMetres(allNodes.get(route.get(i)));
-        }
-
-        return distance;
-    }
 }
