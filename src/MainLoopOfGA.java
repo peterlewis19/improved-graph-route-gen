@@ -7,9 +7,9 @@ public class MainLoopOfGA {
     public MainLoopOfGA(int START_INDEX, int END_INDEX, ArrayList<Node> allNodes, int[][] adjMat) {
         GeneticAlgorithm ga = new GeneticAlgorithm(allNodes, adjMat);
 
-        final int ROUTES_PER_GEN = 200;
-        final int BEST_N_OF_GEN = 40;
-        final int N_OF_GENS = 50;
+        final int ROUTES_PER_GEN = 60;
+        final int BEST_N_OF_GEN = 12;
+        final int N_OF_GENS = 90;
 
         ArrayList<ArrayList<Integer>> allRoutesInThisGeneration = new ArrayList<>();
 
@@ -100,6 +100,9 @@ public class MainLoopOfGA {
             for (int i = 1; i < allRoutesInThisGeneration.size(); i++) {
                 cumulativeFitnessScoresOfGen[i] = cumulativeFitnessScoresOfGen[i - 1] + fitnessScoresOfGen[i];
             }
+
+            //this line is meant to make it way faster
+            bestRoutesInGeneration = new ArrayList<>();
 
             for (int i = 0; i < BEST_N_OF_GEN; i++) {
                 //from 0 to largest value of roulette wheel

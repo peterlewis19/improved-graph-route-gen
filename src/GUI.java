@@ -106,7 +106,7 @@ public class GUI extends JFrame {
 
                 //for displaying the distance of the route
                 // roughly converts into miles
-                String distance = String.format("%.2f",(newGA.getBestRouteLength()/0.02));
+                String distance = String.format("%.1f",(newGA.getBestRouteLength()/0.01979));
                 JLabel distanceToDraw = new JLabel(distance+" miles");
                 distanceBox.removeAll();
                 distanceBox.add(distanceToDraw);

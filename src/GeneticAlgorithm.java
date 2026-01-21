@@ -50,10 +50,7 @@ public class GeneticAlgorithm {
             // this is where lots of time is saved, no calculating on the spot
             double distance = costMat[nodeA][nodeB];
 
-            // Count the errors
-            if (distance < MAX_DISTANCE) {
-                totalDistance += distance;
-            }
+            totalDistance += distance;
         }
 
         return totalDistance;

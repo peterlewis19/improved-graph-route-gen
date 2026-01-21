@@ -7,8 +7,8 @@ public class Main {
         * Meaning they are actually useful. They are in a slightly different format
         * so have to work out how to parse them precisely.
         * */
-        String NODE_DATA_FILE_NAME = "bex_node_data.csv";
-        String ADJACENCY_MATRIX = "bex_adjacency_matrix.csv";
+        String NODE_DATA_FILE_NAME = "bex_node_data_walking.csv";
+        String ADJACENCY_MATRIX = "bex_adjacency_matrix_walking.csv";
 
         // In order to deal with scaling for different data sets
         String AREA_NAME = NODE_DATA_FILE_NAME.substring(0,3);
